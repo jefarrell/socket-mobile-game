@@ -29,16 +29,17 @@
 
 			////  GET OTHER USERS ORIENTATION VALUES  ////
 			socket.on('positionChange', function(values) {
-            		 console.log("other user" + values.a + " " + values.b + " " + values.g)
+            		 //console.log("other user" + values.a + " " + values.b + " " + values.g)
             		 
             	});
 
-		
+			
 			////  GET MY ORIENTATION VALUES  ////
 			function onOrientationChange(e) {
 				var alpha = e.alpha,
             	beta = e.beta,
             	gamma = e.gamma;
+            	////  *in landscape* Beta will control left/right, Gamma will control up/down  ////
             	values = {a: alpha, b:beta, g:gamma};
 
             	////  SEND MY VALUES OUT  ////
@@ -46,25 +47,166 @@
             	map.innerHTML = "Alpha: " + Math.floor(alpha) + "  /  Beta: " + Math.floor(beta) + "  /  Gamma: " + Math.floor(gamma);
             	socket.emit('positionChange', values)
             	//console.log(values);
-            	
+            	return values;
+			}
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////      CANVAS DRAWING SECTION   //////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+			var context;
+			var canvas;
+			var w, h;
+			var rightKey = false;
+			var leftKey = false;
+			var upKey = false;
+			var downKey = false;
+			var block_x;
+			var block_y;
+			var block_h = 10;
+			var block_w = 10;
+
+			function init(){
+			    canvas = document.getElementById("canvas");
+			    canvas.width = window.innerWidth - 16;
+			    canvas.height = window.innerHeight - 16;
+			    context = canvas.getContext('2d');
+			    w = canvas.width;
+			    h = canvas.height;
+			    block_x = w / 2 - 15;
+			    block_y = h /2 - 15;
+			    setInterval('draw()', 25);
+			}
+
+			function clearCanvas() {
+			    context.clearRect(0,0,w,h);
 			}
 
 
+			function draw() {
+				////  ASSUMING LANDSCAPE, HOME BUTTON ON LEFT  ////
+
+				// ////  Tilt left, go left  ////
+			    if (values.b<0){
+			    	block_x +=3;
+			    }
+			    ////  Tilt right, go right  ////
+			    else if (values.b>0) {
+			        block_x -= 3;
+			    }
+			    ////  Tilt away from you, go up  ////
+			    if (values.g<25) {
+			        block_y -= 3;
+			    }
+			 
+			    ////  Tilt towards you, go down  ////
+			    else if (values.g>25) {
+			        block_y += 3;
+			    }
+			    if (block_x <= 0) {
+			        block_x = 0;
+			    }
+			    if ((block_x + block_w) >= w) {
+			        block_x = w - block_w;
+			    }
+			    if (block_y <= 0) {
+			        block_y = 0;
+			    }
+			    if ((block_y + block_h) >= h) {
+			        block_y = h - block_h;
+			    }
+
+			    //context.fillRect(block_x,block_y,block_w,block_h);
+			    context.beginPath();
+			    context.arc(block_x, block_y, block_w/3, 0, 2 * Math.PI, false);
+			    context.fillStyle="#3D3C3D";
+			    context.fill();
 
 
 
+			    //context.stroke();
+			}
 
+			window.onkeydown = function (evt) {
+			    if (!evt) {
+			        evt = window.event;
+			    }
 
+			    var code = evt.keyCode;
 
+			    if (code == 39) {
+			        rightKey = true;
+			        console.log('right');
+			    }
+			    else if (code == 37) {
+			        leftKey = true;
+			        console.log('left');
+			    }
+			    if (code == 38) {
+			        upKey = true;
+			        console.log('up');
+			    }
+			    else if (code == 40) {
+			        downKey = true;
+			        console.log('down');
+			    }
+			};
 
+			window.onkeyup = function (evt) {
+
+			    if (!evt) {
+			        evt = window.event;
+			    }
+
+			    var code = evt.keyCode;
+
+			    if (code == 39) {
+			        rightKey = false;
+			    }
+
+			    else if (code == 37) {
+			        leftKey = false;
+			    }
+
+			    if (code == 38) {
+			        upKey = false;
+			    }
+
+			    else if (code == 40) {
+			        downKey = false;
+			    }
+			};
+
+			window.onresize = resize;
+
+			function resize() {
+			    console.log("resize event detected!");
+			    canvas.width = window.innerWidth - 16;
+			    canvas.height = window.innerHeight - 16;
+			    w = canvas.width;
+			    h = canvas.height;
+			}
+			////  END OF CANVAS DRAWING  ////
+
+			
 			window.addEventListener('deviceorientation', onOrientationChange, false);
 
 		 </script>
+
+
+
+		   <style>
+		        canvas {
+		            display:block;
+		            margin: auto;
+		            /*border: 5px solid lightgrey;*/
+		        }
+   			 </style>
 	</head>
 
-	<body>
+	<body onload="init();" style="background: lightgrey">
 		me:  <div id="userList"></div>
 		<div id="map"></div>
 		others:  <div id = "others"></div>
+		<canvas id="canvas" style="background: white"></canvas>8
 	</body>
 </html>
