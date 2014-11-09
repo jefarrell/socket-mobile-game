@@ -53,7 +53,7 @@ io.sockets.on('connection',
 
 		socket.on('positionChange', function(values){
 			console.log(socket.id + "__" + values.a + " " + values.b + " " + values.g);
-			socket.broadcast.emit('drawing', values);
+			socket.broadcast.emit('positionChange', values);
 		})
 
 		//disconnect clients and remove them from array

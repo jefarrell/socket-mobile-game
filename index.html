@@ -4,6 +4,9 @@
 	
 		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
 		<script type="text/javascript">
+
+		/////////////    SOCKETS SECTION    /////////////
+		/////////////////////////////////////////////////
 			var clients=[];
 			////  SOCKETS ON  ////
 			var socket = io.connect('http://104.131.40.84:8080/');
@@ -12,37 +15,45 @@
 				////  SHOW MY CONNECTION  ////
 				var sessionid = socket.io.engine.id
 				console.log("User Connected: " + sessionid);
-        		//userList.innerHTML = sessionid;
+        		userList.innerHTML = sessionid;
             
 			});
 
 			////  GET OUR UPDATED CLIENT LIST  ////
 			socket.on('clientList', function(data){
 				clients = data;
-				var list = document.getElementById('userList');
-				userList.innerHTML = clients;
+				var others = document.getElementById('others');
+				others.innerHTML = clients;
 				console.log(clients);
 			});
+
+			////  GET OTHER USERS ORIENTATION VALUES  ////
+			socket.on('positionChange', function(values) {
+            		 console.log("other user" + values.a + " " + values.b + " " + values.g)
+            		 
+            	});
+
 		
-			////  GET ORIENTATION VALUES  ////
+			////  GET MY ORIENTATION VALUES  ////
 			function onOrientationChange(e) {
 				var alpha = e.alpha,
             	beta = e.beta,
             	gamma = e.gamma;
-
-            	////  GET VALUES FROM OTHER USERS ////
             	values = {a: alpha, b:beta, g:gamma};
-            	socket.on('positionChange', function(values) {
-            		 console.log("others: " + values)
-            	});
 
             	////  SEND MY VALUES OUT  ////
             	var elem = document.getElementById('map');
             	map.innerHTML = "Alpha: " + Math.floor(alpha) + "  /  Beta: " + Math.floor(beta) + "  /  Gamma: " + Math.floor(gamma);
             	socket.emit('positionChange', values)
-            	console.log(values);
+            	//console.log(values);
             	
 			}
+
+
+
+
+
+
 
 
 
@@ -52,7 +63,8 @@
 	</head>
 
 	<body>
-		<div id="userList"></div>
-		<div id="map"><div>
+		me:  <div id="userList"></div>
+		<div id="map"></div>
+		others:  <div id = "others"></div>
 	</body>
 </html>
