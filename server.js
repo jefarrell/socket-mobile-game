@@ -50,6 +50,12 @@ io.sockets.on('connection',
 
 		io.sockets.emit('clientList',clients);
 		
+
+		socket.on('positionChange', function(values){
+			console.log(socket.id + "__" + values.a + " " + values.b + " " + values.g);
+			socket.broadcast.emit('drawing', values);
+		})
+
 		//disconnect clients and remove them from array
 		socket.on('disconnect', function() {
 			console.log("Client has disconnected " + socket.id);
