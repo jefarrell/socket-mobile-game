@@ -1,0 +1,53 @@
+
+<html>
+	<head>
+	
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript">
+			var clients=[];
+			//socket connections
+			var socket = io.connect('http://104.131.40.84:8080/');
+			socket.on('connect', function() {
+					//establish ids for users
+					var sessionid = socket.io.engine.id
+					console.log("User Connected: " + sessionid);
+					
+				//show id's on page for now
+				
+            	userList.innerHTML = sessionid;
+            
+			});
+
+			socket.on('clientList', function(data){
+
+				clients = data;
+				var list = document.getElementById('userList');
+				userList.innerHTML = clients;
+				console.log(clients);
+			});
+		
+			// get orientation change values
+			function onOrientationChange(e) {
+				var alpha = e.alpha,
+            	beta = e.beta,
+            	gamma = e.gamma;
+
+            	//print the values on the screen
+            	var elem = document.getElementById('map');
+            	map.innerHTML = "Alpha: " + Math.floor(alpha) + "  /  Beta: " + Math.floor(beta) + "  /  Gamma: " + Math.floor(gamma);
+
+            	//console.log("Alpha: " + Math.floor(alpha) + "  /  Beta: " + Math.floor(beta) + "  /  Gamma: " + Math.floor(gamma))
+			}
+
+
+
+			window.addEventListener('deviceorientation', onOrientationChange, false);
+
+		 </script>
+	</head>
+
+	<body>
+		<div id="userList"></div>
+		<div id="map"><div>
+	</body>
+</html>
