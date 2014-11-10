@@ -10,8 +10,7 @@ function requestHandler(req, res) {
 	var parsedUrl = url.parse(req.url);
 	console.log("The Request is: " + parsedUrl.pathname);
 	
-	// Read index.html
-	
+	// Read index.html	
 	fs.readFile(__dirname + parsedUrl.pathname, 
 		// Callback function for reading
 		function (err, data) {
@@ -32,7 +31,7 @@ function requestHandler(req, res) {
 // WebSockets work with the HTTP server
 var io = require('socket.io').listen(httpServer);
 
-//empty array to hold clients
+// Empty array to hold clients
 var clients = [];
 
 // Register a callback function to run when we have an individual connection
@@ -40,23 +39,22 @@ var clients = [];
 io.sockets.on('connection', 
 	// We are given a websocket object in our function
 	function (socket) {
+
 		console.log("connected");
-		//console.log("We have a new client: " + socket.id);
-		//socket.broadcast.emit(socket.id);
-		
-		//add new clients to our array
+		// Add new clients to our array
 		clients.push(socket.id);
 		console.log(clients);
-
+		// Send out array of all clients
 		io.sockets.emit('clientList',clients);
 		
-
+		// Show which users are moving where, and send the values
 		socket.on('positionChange', function(values){
 			console.log(socket.id + "__" + values.a + " " + values.b + " " + values.g);
-			socket.broadcast.emit('positionChange', values);
+			var clientvals = [socket.id, values];
+			socket.broadcast.emit('positionChangeServer', clientvals);
 		})
 
-		//disconnect clients and remove them from array
+		// Disconnect clients and remove them from array
 		socket.on('disconnect', function() {
 			console.log("Client has disconnected " + socket.id);
 			clients.splice(clients.indexOf(socket.id), 1);
