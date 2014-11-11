@@ -48,10 +48,12 @@ io.sockets.on('connection',
 		io.sockets.emit('clientList',clients);
 		
 		// Show which users are moving where, and send the values
-		socket.on('positionChange', function(values){
-			console.log(socket.id + "__" + values.a + " " + values.b + " " + values.g);
-			var clientvals = [socket.id, values];
-			socket.broadcast.emit('positionChangeServer', clientvals);
+		socket.on('positionChange', function(newData){
+			//console.log(socket.id + "__" + values.a + " " + values.b + " " + values.g);
+			var clientvals = [socket.id, newData];
+		
+			console.log(clientvals);
+			io.sockets.emit('positionChangeServer', clientvals);
 		})
 
 		// Disconnect clients and remove them from array
