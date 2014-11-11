@@ -1,275 +1,268 @@
 
 <html>
-	<head>
-	
-		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
-		<script type="text/javascript">
+    <head>
+    
+        <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript">
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////     SOCKET SECTION   ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-			var clients=[];
-			////  SOCKETS ON  ////
-			var socket = io.connect('http://104.131.40.84:8080/');
-			socket.on('connect', function() {
+        var clients=[];
+        var users = [];
+        ////  SOCKETS ON  ////
+        var socket = io.connect('http://104.131.40.84:8080/');
+        socket.on('connect', function() {
 
-				////  SHOW MY CONNECTION  ////
-				var sessionid = socket.io.engine.id
-				console.log("User Connected: " + sessionid);
-        		userList.innerHTML = sessionid;
+            ////  SHOW MY CONNECTION  ////
+            var sessionid = socket.io.engine.id
+            console.log("User Connected: " + sessionid);
+            userList.innerHTML = sessionid;
+        
+        });
+
+        ////  GET OUR UPDATED CLIENT LIST  ////
+        socket.on('clientList', function(data){
+            //clients = data;
+            var others = document.getElementById('others');
+            others.innerHTML = clients;
+            //console.log(clients);
+        });
+
+        ////  GET OTHER USERS ORIENTATION VALUES  ////
+        socket.on('positionChangeServer', function(clientvals) {
+
+     
+          var userInfo = {n: "Regina", c: "#FFF", s: 3};
+
+
+        // for (i = 0; i < clients.length; i++) {
+            var parsed = JSON.parse(clientvals[1]);
+            var clientid = clientvals[0];
+            //console.log("*****" + clientid);
+                var exists = -1;
+                for (var i = 0; i < clients.length; i++) {
+                    //console.log("does " + clients[i] + " = " + clientid);
+                    if (clientid == clients[i]) {
+                        exists = i;
+                        break;
+                    }
+                }
+
+                if (exists == -1) {
+              //if (! (clientid in clients)) {
+                    clients.push(clientid);
+                    //console.log("new user");
+                    // var newuser = new userParticle(null, userInfo, document.body, clientid, context)
+                    // users.push(newuser);
+        //              newuser.run(parsed[0].x, parsed[0].y);
+                    // console.log(clientid);
+              } else {
+                    //console.log("user exists" + exists);
+                    // var currentuser = users[exists];
+                    // currentuser.run(parsed[0].x,parsed[0].y);
+
+
+                    }
+            });
+        
+
+
+            window.ondeviceorientation = function(evt) {
+                if(!evt) {
+                    evt = window.event;
+            }
+            val.a = evt.alpha;
+            val.b = evt.beta;
+            val.g = evt.gamma
+            ////  *in landscape* Beta will control left/right, Gamma will control up/down  ////
+            values = {a: evt.alpha, b:evt.beta, g:evt.gamma};
             
-			});
-
-			////  GET OUR UPDATED CLIENT LIST  ////
-			socket.on('clientList', function(data){
-				clients = data;
-				var others = document.getElementById('others');
-				others.innerHTML = clients;
-				//console.log(clients);
-			});
-
-			////  GET OTHER USERS ORIENTATION VALUES  ////
-			socket.on('positionChangeServer', function(clientvals) {
-
-					var parsed = JSON.parse(clientvals[1]);
-					var clientid = clientvals[0];
-					var clientBeta = parsed[0].x;
-					var clientGamma = parsed[0].y;
-					//console.log(clientid + " " + clientBeta + " " + clientGamma);
-
-         
-   					  var userInfo = {n: "Regina", c: "#FFF", s: 3};
-
-            		 //userclass2 = new userParticle(null, userInfo, document.body, clientid, context);
-            		 //console.log(userclass2);
-			          			 for (i = 0; i < clients.length; i++) {
-			          			// 	var newclass = userclass + i;
-			          			// 	JSON.parse(newclass);
-			          			// 	console.log(newclass[0]);
-							          if (clients[i] === clientid){
-							          	//console.log(clientid);
-							          	var newparsed = JSON.parse(clientvals[i]);
-								          	newclientBeta = newparsed[0].x;
-								          	newclientGamma = newparsed[0].y;
-								          	console.log(newclientBeta);
-							          } else {
-							          		null;
-								          	//userclass[i](null, userInfo, document.body, clientid, context);
-								          	//userclass.run();
-
-							          }
-					 }
-
-        //     		 var render2 = function () {
-				    //   //  userclass2.run();
-				    //    //	newData = userclass2.sendData();
-				    //     //console.log(data);
-				    //     requestAnimationFrame(render2);
-				    // };
-
-				    // //requestAnimationFrame(render2);
+            ////  SEND MY VALUES OUT  ////
+            var elem = document.getElementById('map');
+             map.innerHTML = "Alpha: " + Math.floor(evt.alpha) + "  /  Beta: " + Math.floor(evt.beta) + "  /  Gamma: " + Math.floor(evt.gamma);
+             socket.emit('positionChange', newData)
+             
 
 
-
-            	});
-			
-
-
-   			window.ondeviceorientation = function(evt) {
-   				if(!evt) {
-   					evt = window.event;
-				}
-				val.a = evt.alpha;
-				val.b = evt.beta;
-				val.g = evt.gamma
-            	////  *in landscape* Beta will control left/right, Gamma will control up/down  ////
-            	values = {a: evt.alpha, b:evt.beta, g:evt.gamma};
-            	
-            	////  SEND MY VALUES OUT  ////
-            	var elem = document.getElementById('map');
-            	 map.innerHTML = "Alpha: " + Math.floor(evt.alpha) + "  /  Beta: " + Math.floor(evt.beta) + "  /  Gamma: " + Math.floor(evt.gamma);
-            	 socket.emit('positionChange', newData)
-            	 
-
-
-			}
-			
-			
+        }
+            
+            
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////     CANVAS DRAWING SECTION   ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-var context, canvas, w, h;
-var userclass;
-var val = {
-	a:0,
-	b:0,
-	g:0
-}
-var newData;
+        var context, canvas, w, h;
+        var userclass;
+        var val = {
+            a:0,
+            b:0,
+            g:0
+        }
+        var newData;
 
-requestAnimationFrame =  window.requestAnimationFrame ||
-window.webkitRequestAnimationFrame ||
-window.msRequestAnimationFrame ||
-window.mozRequestAnimationFrame;
+        requestAnimationFrame =  window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        window.mozRequestAnimationFrame;
 
-function init() {
-    canvas = document.getElementById('canvas');
-    canvas.width = window.innerWidth - 16;
-    canvas.height = window.innerHeight - 16;
+        function init() {
+            canvas = document.getElementById('canvas');
+            canvas.width = window.innerWidth - 16;
+            canvas.height = window.innerHeight - 16;
 
-    w = canvas.width;
-    h = canvas.height;
-    context = canvas.getContext('2d');
+            w = canvas.width;
+            h = canvas.height;
+            context = canvas.getContext('2d');
 
-    var itemToFindLoc = {x: 233, y: 222};
-    var userInfo = {n: "Regina", c: "#3D3C3D", s: 3};
-    
-    userclass = new userParticle(itemToFindLoc, userInfo, document.body, "socketID", context);
-  
-    var render = function () {
-        userclass.run();
-       	newData = userclass.sendData();
-        //console.log(data);
-        requestAnimationFrame(render);
-    };
+            var itemToFindLoc = {x: 233, y: 222};
+            var userInfo = {n: "Regina", c: "#3D3C3D", s: 3};
+            
+            userclass = new userParticle(itemToFindLoc, userInfo, document.body, "socketID", context);
+          
+            var render = function () {
+                userclass.run();
+                newData = userclass.sendData();
+                //console.log(data);
+                requestAnimationFrame(render);
+            };
 
-    requestAnimationFrame(render);
- 
-}
+            requestAnimationFrame(render);
+         
+        }
 
-var userParticle = function(tre, user, body, socID, canvasContext){
-    this.treasure = tre;
-    this.values;
+        var userParticle = function(tre, user, body, socID, canvasContext){
+            this.treasure = tre;
+            this.values;
 
-    this.ctx = canvasContext;
-    this.block = {
-        x: w / 2 - 15,
-        y: h /2 - 15,
-        h: 10,
-        w: 10
-    };
+            this.ctx = canvasContext;
+            this.block = {
+                x: w / 2 - 15,
+                y: h /2 - 15,
+                h: 10,
+                w: 10
+            };
 
-    this.user = {
-        name: null,
-        color: null,
-        size: 2
-    };
+            this.user = {
+                name: null,
+                color: null,
+                size: 2
+            };
 
-    this.notFoundIt = true;
-    this.score = 0;
-    this.requestId = null;
-    this.socketId = socID;
-    this.last = timestamp();
-
-
-    this.run = run;
-    this.update = update;
-    this.display = display;
-
-    this.self = this;
-    this.sendData = sendData;
+            this.notFoundIt = true;
+            this.score = 0;
+            this.requestId = null;
+            this.socketId = socID;
+            this.last = timestamp();
 
 
-};
-//  json stringify
-var run = function(){
-    //console.log("i'm running");
-    this.display();
-    this.update();
-    
-};
+            this.run = run;
+            this.update = update;
+            this.display = display;
 
-var update = function(){
-   
-    ////  ASSUMING LANDSCAPE, HOME BUTTON ON LEFT  ////
-    
-    ////  Tilt left, go left  ////
-    if (val.g > 0) {
-        this.block.x += 3;
-    }
-
-    ////  Tilt right, go right  ////
-    else if (val.g < 0) {
-        this.block.x -= 3;
-    }
-
-    ////  Tilt away from you, go up  ////
-    if (val.b < 25) {
-        //console.log(this.values.g);
-        this.block.y -= 3;
-    }
-
-    ////  Tilt towards you, go down  ////
-    else if (val.b > 25) {
-       // console.log('moving down...');
-        this.block.y += 3;
-    }
+            this.self = this;
+            this.sendData = sendData;
 
 
-    if (this.block.y <= 0) {
-        this.block.y = 0;
-    }
-    if ((this.block.x + this.block.w) >= w) {
-        this.block.x = w - this.block.w;
-    }
-    if (this.block.y <= 0) {
-        this.block.y = 0;
-    }
-    if ((this.block.y + this.block.h) >= h) {
-        this.block.y = h - this.block.h;
-    }
-};
+        };
+        //  json stringify
+        //var run = function(newx, newy){
+            var run = function() {
+            //console.log("i'm running");
+            //this.update(newx, newy);
+            this.update();
+            this.display();         
+        };
 
-var display = function(){
-    var self = this;
-   // console.log('drawing...');
-    context.beginPath();
+        //var update = function(newx, newy){
+           var update = function() {
+            ////  ASSUMING LANDSCAPE, HOME BUTTON ON LEFT  ////
+            
+            ////  Tilt left, go left  ////
+            //newx, newy
+            if (val.b > 0) {
+                this.block.x += 3;
+            }
 
-    context.arc(this.block.x, this.block.y, this.block.w/this.user.size, 0, 2 * Math.PI, false);
-    context.fillStyle="#ff0000"; // replace value with user.color;
-    context.fill();
-    context.closePath();
+            ////  Tilt right, go right  ////
+            else if (val.b < 0) {
+                this.block.x -= 3;
+            }
+
+            ////  Tilt away from you, go up  ////
+            if (val.g < 25) {
+                //console.log(this.values.g);
+                this.block.y -= 3;
+            }
+
+            ////  Tilt towards you, go down  ////
+            else if (val.g > 25) {
+               // console.log('moving down...');
+                this.block.y += 3;
+            }
 
 
-};
+            if (this.block.y <= 0) {
+                this.block.y = 0;
+            }
+            if ((this.block.x + this.block.w) >= w) {
+                this.block.x = w - this.block.w;
+            }
+            if (this.block.y <= 0) {
+                this.block.y = 0;
+            }
+            if ((this.block.y + this.block.h) >= h) {
+                this.block.y = h - this.block.h;
+            }
+        };
 
-	var sendData = function(){
-    var dat = [
-        this.block,
-        this.user
-    ];
-    return JSON.stringify(dat);
+        var display = function(){
+            var self = this;
+           // console.log('drawing...');
+            context.beginPath();
 
-};
+            context.arc(this.block.x, this.block.y, this.block.w/this.user.size, 0, 2 * Math.PI, false);
+            context.fillStyle="#ff0000"; // replace value with user.color;
+            context.fill();
+            context.closePath();
+
+
+        };
+
+            var sendData = function(){
+            var dat = [
+                this.block,
+                this.user
+            ];
+            return JSON.stringify(dat);
+
+        };
 
 
 
-function timestamp() {
-    return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
-}
+        function timestamp() {
+            return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
+        }
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////    END DRAWING SECTION       ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-			
-			//window.addEventListener('deviceorientation', onOrientationChange, false);
 
-		 </script>
+         </script>
 
 
 
-		   <style>
-		        canvas {
-		            display:block;
-		            margin: auto;
-		        }
-   			 </style>
-	</head>
+           <style>
+                canvas {
+                    display:block;
+                    margin: auto;
+                }
+             </style>
+    </head>
 
-	<body onload="init();" style="background: lightgrey">
-		me:  <div id="userList"></div>
-		<div id="map"></div>
-		others:  <div id = "others"></div>
-		<canvas id="canvas" style="background:black"></canvas>
-	</body>
+    <body onload="init();" style="background: lightgrey">
+        me:  <div id="userList"></div>
+        <div id="map"></div>
+        others:  <div id = "others"></div>
+        <canvas id="canvas" style="background:black"></canvas>
+    </body>
 </html>
