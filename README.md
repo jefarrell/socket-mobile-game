@@ -1,4 +1,4 @@
-socket-mobile-game
+Web Socket game with mobile control
 ==================
 
 ####Live Web game - control with mobile orientation &amp; web sockets
